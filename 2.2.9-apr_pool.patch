@@ -1,0 +1,11 @@
+--- origsrc/httpd-2.2.9/modules/ssl/ssl_engine_config.c	2006-07-23 06:11:58.000000000 -0500
++++ src/httpd-2.2.9/modules/ssl/ssl_engine_config.c	2008-07-31 11:16:51.156250000 -0500
+@@ -79,7 +79,7 @@
+     memset(mc->pTmpKeys, 0, sizeof(mc->pTmpKeys));
+ 
+     apr_pool_userdata_set(mc, SSL_MOD_CONFIG_KEY,
+-                          apr_pool_cleanup_null,
++                          NULL,
+                           pool);
+ 
+     return mc;

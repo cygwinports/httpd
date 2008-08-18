@@ -1,0 +1,248 @@
+--- origsrc/httpd-2.2.9/Makefile.in	2008-02-04 17:00:07.000000000 -0600
++++ src/httpd-2.2.9/Makefile.in	2008-07-31 12:53:05.609375000 -0500
+@@ -73,7 +85,7 @@
+ 	    	chmod 0644 $(DESTDIR)$(sysconfdir)/original/$$i; \
+ 	    	file=$$i; \
+ 	    	if [ "$$i" = "httpd.conf" ]; then \
+-	    		file=`echo $$i|sed s/.*.conf/$(PROGRAM_NAME).conf/`; \
++	   	        file=`echo $$i|sed s/.*.conf/$(CONFIG_NAME).conf/`; \
+ 	    	fi; \
+ 	    	if test ! -f $(DESTDIR)$(sysconfdir)/$$file; then \
+ 	    		$(INSTALL_DATA) $(DESTDIR)$(sysconfdir)/original/$$i $(DESTDIR)$(sysconfdir)/$$file; \
+--- origsrc/httpd-2.2.9/build/install.sh	2006-07-11 22:38:44.000000000 -0500
++++ src/httpd-2.2.9/build/install.sh	2008-07-31 11:16:51.046875000 -0500
+@@ -102,6 +102,14 @@
+ src="$src$ext"
+ dst="$dst$ext"
+ 
++# Automagically append .exe - this is needed because libtool will not pass
++# unknown options to an install program, so we are unable to use "-e .exe"
++# in this case.
++if [ -f "$src.exe" ]; then
++  src="$src.exe"
++  dst="$dst.exe"
++fi
++
+ #  Make a temp file name in the proper directory.
+ dstdir=`dirname $dst`
+ dsttmp=$dstdir/#inst.$$#
+--- origsrc/httpd-2.2.9/configure.in	2008-06-09 11:04:46.000000000 -0500
++++ src/httpd-2.2.9/configure.in	2008-07-31 11:51:07.921875000 -0500
+@@@ -501,6 +508,7 @@
+ esyscmd(./build/config-stubs .)
+ 
+ APACHE_SUBST(progname)
++APACHE_SUBST(confname)
+ APACHE_SUBST(MPM_LIB)
+ APACHE_SUBST(OS)
+ APACHE_SUBST(OS_DIR)
+@@ -549,6 +557,11 @@
+   progname="$withval" ], [
+   progname="httpd"] )
+ 
++AC_ARG_WITH(conf-name,
++APACHE_HELP_STRING(--with-conf-name,alternate configuration file basename),[
++  confname="$withval" ], [
++  confname="httpd"] )
++
+ # SuExec parameters
+ AC_ARG_WITH(suexec-bin,
+ APACHE_HELP_STRING(--with-suexec-bin,Path to suexec binary),[
+@@ -637,7 +650,7 @@
+ APR_EXPAND_VAR(ap_prefix, $prefix)
+ AC_DEFINE_UNQUOTED(HTTPD_ROOT, "${ap_prefix}",
+ 	[Root directory of the Apache install area])
+-AC_DEFINE_UNQUOTED(SERVER_CONFIG_FILE, "${rel_sysconfdir}/${progname}.conf",
++AC_DEFINE_UNQUOTED(SERVER_CONFIG_FILE, "${rel_sysconfdir}/${confname}.conf",
+ 	[Location of the config file, relative to the Apache root directory])
+ AC_DEFINE_UNQUOTED(AP_TYPES_CONFIG_FILE, "${rel_sysconfdir}/mime.types",
+ 	[Location of the MIME types config file, relative to the Apache root directory])
+--- origsrc/httpd-2.2.9/config.layout	2004-11-21 12:50:36.000000000 -0600
++++ src/httpd-2.2.9/config.layout	2008-07-31 11:16:51.078125000 -0500
+@@ -322,3 +322,27 @@
+     installbuilddir: ${prefix}/etc/apache2/build
+     errordir:      ${datadir}/error
+ </Layout>
++
++# Cygwin packaged layout
++<Layout Cygwin>
++    prefix:        /usr
++    exec_prefix:   ${prefix}
++    bindir:        ${exec_prefix}/bin
++    sbindir:       ${exec_prefix}/sbin
++    libdir:        ${exec_prefix}/lib
++    libexecdir:    ${exec_prefix}/lib+
++    mandir:        ${prefix}/share/man
++    sysconfdir:    /etc+
++    datadir:       ${prefix}/share+
++    installbuilddir: ${datadir}/build
++    errordir:      ${datadir}/error
++    iconsdir:      ${datadir}/icons
++    htdocsdir:     /srv/www/htdocs
++    manualdir:     ${datadir}/manual
++    cgidir:        /srv/www/cgi-bin
++    includedir:    ${prefix}/include+
++    localstatedir: /var
++    runtimedir:    ${localstatedir}/run+
++    logfiledir:    ${localstatedir}/log+
++    proxycachedir: ${localstatedir}/cache+
++</Layout>
+--- origsrc/httpd-2.2.9/docs/conf/extra/httpd-mpm.conf.in	2007-12-28 21:08:28.000000000 -0600
++++ src/httpd-2.2.9/docs/conf/extra/httpd-mpm.conf.in	2008-07-31 11:16:51.109375000 -0500
+@@ -9,7 +9,7 @@
+ # Note that this is the default PidFile for most MPMs.
+ #
+ <IfModule !mpm_netware_module>
+-    PidFile "@rel_runtimedir@/httpd.pid"
++    PidFile "@rel_runtimedir@/@progname@.pid"
+ </IfModule>
+ 
+ #
+--- origsrc/httpd-2.2.9/include/ap_config_layout.h.in	2006-07-11 22:38:44.000000000 -0500
++++ src/httpd-2.2.9/include/ap_config_layout.h.in	2008-07-31 11:16:51.125000000 -0500
+@@ -60,5 +60,6 @@
+ #define DEFAULT_REL_LOGFILEDIR "@rel_logfiledir@"
+ #define DEFAULT_EXP_PROXYCACHEDIR "@exp_proxycachedir@"
+ #define DEFAULT_REL_PROXYCACHEDIR "@rel_proxycachedir@"
++#define HTTPD_PROGNAME "@progname@"
+ 
+ #endif /* AP_CONFIG_LAYOUT_H */
+--- origsrc/httpd-2.2.9/server/mpm/prefork/mpm_default.h	2006-07-11 22:38:44.000000000 -0500
++++ src/httpd-2.2.9/server/mpm/prefork/mpm_default.h	2008-07-31 11:16:51.171875000 -0500
+@@ -53,7 +53,7 @@
+ 
+ /* Where the main/parent process's pid is logged */
+ #ifndef DEFAULT_PIDLOG
+-#define DEFAULT_PIDLOG DEFAULT_REL_RUNTIMEDIR "/httpd.pid"
++#define DEFAULT_PIDLOG DEFAULT_REL_RUNTIMEDIR "/" HTTPD_PROGNAME ".pid"
+ #endif
+ 
+ /*
+--- origsrc/httpd-2.2.9/server/mpm/worker/mpm_default.h	2006-07-11 22:38:44.000000000 -0500
++++ src/httpd-2.2.9/server/mpm/worker/mpm_default.h	2008-07-31 11:16:51.171875000 -0500
+@@ -57,7 +57,7 @@
+ 
+ /* Where the main/parent process's pid is logged */
+ #ifndef DEFAULT_PIDLOG
+-#define DEFAULT_PIDLOG DEFAULT_REL_RUNTIMEDIR "/httpd.pid"
++#define DEFAULT_PIDLOG DEFAULT_REL_RUNTIMEDIR "/" HTTPD_PROGNAME ".pid"
+ #endif
+ 
+ /*
+--- origsrc/httpd-2.2.9/support/apxs.in	2006-07-11 22:38:44.000000000 -0500
++++ src/httpd-2.2.9/support/apxs.in	2008-07-31 11:16:51.187500000 -0500
+@@ -36,6 +36,7 @@
+ my $datadir        = get_vars("datadir");
+ my $localstatedir  = get_vars("localstatedir");
+ my $CFG_TARGET     = get_vars("progname");
++my $CFG_CONFNAME   = get_vars("confname");
+ my $CFG_SYSCONFDIR = get_vars("sysconfdir");
+ my $CFG_CFLAGS     = join ' ', map { get_vars($_) }
+   qw(SHLTCFLAGS CFLAGS NOTEST_CPPFLAGS EXTRA_CPPFLAGS EXTRA_CFLAGS);
+@@ -46,6 +47,9 @@
+ my $CFG_LIBEXECDIR = eval qq("$libexecdir");
+ my $sbindir        = get_vars("sbindir");
+ my $CFG_SBINDIR    = eval qq("$sbindir");
++my $libdir         = get_vars("libdir");
++my $CFG_LIBDIR     = eval qq("$libdir");
++my $SH_LDFLAGS     = get_vars("SH_LDFLAGS");
+ my $ltflags        = $ENV{'LTFLAGS'};
+ $ltflags or $ltflags = "--silent";
+ 
+@@ -289,7 +293,7 @@
+ 
+     my $data = join('', <DATA>);
+     $data =~ s|%NAME%|$name|sg;
+-    $data =~ s|%TARGET%|$CFG_TARGET|sg;
++    $data =~ s|%CONFNAME%|$CFG_CONFNAME|sg;
+     $data =~ s|%PREFIX%|$prefix|sg;
+     $data =~ s|%INSTALLBUILDDIR%|$installbuilddir|sg;
+ 
+@@ -441,9 +445,21 @@
+         $opt .= " ".$apu_libs." ".$apr_libs;
+     }
+     else {
++        if ($^O eq "cygwin") {
++            my $apr_libs = `$apr_config --ldflags --link-libtool --libs`;
++            chomp($apr_libs);
++            my $apu_libs = `$apu_config --ldflags --link-libtool --libs`;
++            chomp($apu_libs);
++            
++            $opt .= " -rpath $CFG_LIBEXECDIR -module -avoid-version";
++            $opt .= " $SH_LDFLAGS $CFG_LIBDIR/libhttpd2core.la";
++            $opt .= " ".$apu_libs." ".$apr_libs;
++        }
++        else {
+         my $apr_ldflags=`$apr_config --ldflags`;
+         chomp($apr_ldflags);
+         $opt .= " -rpath $CFG_LIBEXECDIR -module -avoid-version $apr_ldflags";
++        }
+     }
+ 
+     push(@cmds, "$libtool $ltflags --mode=link $CFG_CC -o $dso_file $opt $lo");
+@@ -477,6 +493,9 @@
+         $t =~ s|^.+/([^/]+)$|$1|;
+         #  use .so unambigiously for installed shared library modules
+         $t =~ s|\.[^./\\]+$|\.so|;
++        if ($^O eq "cygwin") {
++            $t =~ s|^lib|cyg|;
++        }
+         if ($opt_i) {
+ 	    push(@cmds, "$installbuilddir/instdso.sh SH_LIBTOOL='" .
+                  "$libtool' $f $CFG_LIBEXECDIR");
+@@ -527,17 +546,17 @@
+ 
+     #   activate module via LoadModule/AddModule directive
+     if ($opt_a or $opt_A) {
+-        if (not -f "$CFG_SYSCONFDIR/$CFG_TARGET.conf") {
+-            error("Config file $CFG_SYSCONFDIR/$CFG_TARGET.conf not found");
++        if (not -f "$CFG_SYSCONFDIR/$CFG_CONFNAME.conf") {
++            error("Config file $CFG_SYSCONFDIR/$CFG_CONFNAME.conf not found");
+             exit(1);
+         }
+ 
+-        open(FP, "<$CFG_SYSCONFDIR/$CFG_TARGET.conf") || die;
++        open(FP, "<$CFG_SYSCONFDIR/$CFG_CONFNAME.conf") || die;
+         my $content = join('', <FP>);
+         close(FP);
+ 
+         if ($content !~ m|\n#?\s*LoadModule\s+|) {
+-            error("Activation failed for custom $CFG_SYSCONFDIR/$CFG_TARGET.conf file.");
++            error("Activation failed for custom $CFG_SYSCONFDIR/$CFG_CONFNAME.conf file.");
+             error("At least one `LoadModule' directive already has to exist.");
+             exit(1);
+         }
+@@ -613,15 +632,15 @@
+                 $content =~ s|^(.*\n)#?\s*$lmd[^\n]*\n|$1$c$lmd\n|s;
+             }
+             $lmd =~ m|LoadModule\s+(.+?)_module.*|;
+-            notice("[$what module `$1' in $CFG_SYSCONFDIR/$CFG_TARGET.conf]");
++            notice("[$what module `$1' in $CFG_SYSCONFDIR/$CFG_CONFNAME.conf]");
+         }
+         if (@lmd) {
+-            if (open(FP, ">$CFG_SYSCONFDIR/$CFG_TARGET.conf.new")) {
++            if (open(FP, ">$CFG_SYSCONFDIR/$CFG_CONFNAME.conf.new")) {
+                 print FP $content;
+                 close(FP);
+-                system("cp $CFG_SYSCONFDIR/$CFG_TARGET.conf $CFG_SYSCONFDIR/$CFG_TARGET.conf.bak && " .
+-                       "cp $CFG_SYSCONFDIR/$CFG_TARGET.conf.new $CFG_SYSCONFDIR/$CFG_TARGET.conf && " .
+-                       "rm $CFG_SYSCONFDIR/$CFG_TARGET.conf.new");
++                system("cp $CFG_SYSCONFDIR/$CFG_CONFNAME.conf $CFG_SYSCONFDIR/$CFG_CONFNAME.conf.bak && " .
++                       "cp $CFG_SYSCONFDIR/$CFG_CONFNAME.conf.new $CFG_SYSCONFDIR/$CFG_CONFNAME.conf && " .
++                       "rm $CFG_SYSCONFDIR/$CFG_CONFNAME.conf.new");
+             } else {
+                 notice("unable to open configuration file");
+             }
+@@ -701,10 +720,10 @@
+ **
+ **    $ apxs -c -i mod_%NAME%.c
+ **
+-**  Then activate it in Apache's %TARGET%.conf file for instance
++**  Then activate it in Apache's %CONFNAME%.conf file for instance
+ **  for the URL /%NAME% in as follows:
+ **
+-**    #   %TARGET%.conf
++**    #   %CONFNAME%.conf
+ **    LoadModule %NAME%_module modules/mod_%NAME%.so
+ **    <Location /%NAME%>
+ **    SetHandler %NAME%

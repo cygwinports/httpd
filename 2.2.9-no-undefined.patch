@@ -1,0 +1,138 @@
+--- origsrc/httpd-2.2.9/Makefile.in	2008-02-04 17:00:07.000000000 -0600
++++ src/httpd-2.2.9/Makefile.in	2008-07-31 12:53:05.609375000 -0500
+@@ -3,9 +3,10 @@
+ CLEAN_SUBDIRS = test
+ 
+ PROGRAM_NAME         = $(progname)
++CONFIG_NAME          = $(confname)
+ PROGRAM_SOURCES      = modules.c
+-PROGRAM_LDADD        = buildmark.o $(HTTPD_LDFLAGS) $(PROGRAM_DEPENDENCIES) $(EXTRA_LIBS) $(AP_LIBS) $(LIBS)
+-PROGRAM_PRELINK      = $(COMPILE) -c $(top_srcdir)/server/buildmark.c
++PROGRAM_LDADD        = buildmark.lo $(HTTPD_LDFLAGS) $(PROGRAM_DEPENDENCIES) $(EXTRA_LIBS) $(AP_LIBS) $(LIBS)
++PROGRAM_PRELINK      = $(LIBTOOL) --mode=compile $(COMPILE) -c $(top_srcdir)/server/buildmark.c
+ PROGRAM_DEPENDENCIES = \
+   server/libmain.la \
+   $(BUILTIN_LIBS) \
+@@ -16,7 +17,7 @@
+ TARGETS         = $(PROGRAMS) $(shared_build) $(other_targets)
+ INSTALL_TARGETS = install-conf install-htdocs install-error install-icons \
+ 	install-other install-cgi install-include install-suexec install-build \
+-	install-man
++	install-man install-cygcore
+ 
+ DISTCLEAN_TARGETS  = include/ap_config_auto.h include/ap_config_layout.h \
+ 	modules.c config.cache config.log config.status build/config_vars.mk \
+@@ -26,7 +27,18 @@
+ 	httpd.spec
+ 
+ include $(top_builddir)/build/rules.mk
+-include $(top_srcdir)/build/program.mk
++
++PROGRAM_OBJECTS = $(PROGRAM_SOURCES:.c=.lo)
++
++modules.lo: modules.c
++	$(SH_COMPILE)
++
++$(PROGRAM_NAME): $(CORE_IMPLIB)
++	$(LINK) $(PROGRAM_LDFLAGS) $(HTTPD_LDFLAGS) $(CORE_IMPLIB)
++
++$(CORE_IMPLIB): $(PROGRAM_DEPENDENCIES) $(PROGRAM_OBJECTS)
++	$(PROGRAM_PRELINK)
++	$(LINK) -no-undefined -avoid-version -rpath $(exp_libdir) $(PROGRAM_LDFLAGS) $(PROGRAM_OBJECTS) $(PROGRAM_LDADD)
+ 
+ install-conf:
+ 	@echo Installing configuration files
+@@ -223,6 +235,12 @@
+             chmod 4755 $(DESTDIR)$(sbindir)/suexec; \
+ 	fi
+ 
++install-cygcore:
++	@if test -n '$(PROGRAMS)'; then \
++	    test -d $(DESTDIR)$(libdir) || $(MKINSTALLDIRS) $(DESTDIR)$(libdir); \
++	    $(INSTALL_PROGRAM) $(CORE_IMPLIB) $(DESTDIR)$(libdir); \
++	fi
++
+ suexec:
+ 	cd support && $(MAKE) suexec
+ 
+--- origsrc/httpd-2.2.9/build/instdso.sh	2006-07-11 22:38:44.000000000 -0500
++++ src/httpd-2.2.9/build/instdso.sh	2008-07-31 11:16:51.062500000 -0500
+@@ -53,13 +53,20 @@
+ echo $CMD
+ $CMD || exit $?
+ 
+-if test "$SYS" = "OS/2"
+-then
++case "$SYS" in
++  OS/2)
+     # on OS/2, aplibtool --install doesn't copy the .la files & we can't
+     # rename DLLs to have a .so extension or they won't load so none of the 
+     # steps below make sense.
+     exit 0
+-fi
++  ;;
++  CYGWIN*)
++    # On Cygwin we can't rename DLLs either. Libtool will install .la files,
++    # but we _need_ them to allow DSOs built by other software packages to link
++    # against installed DSOs - e.g. mod_dav_svn -> mod_dav.
++    exit 0
++  ;;
++esac
+ 
+ DLNAME=`sed -n "/^dlname=/{s/.*='\([^']*\)'/\1/;p;}" $TARGETDIR/$DSOARCHIVE_BASENAME`
+ LIBRARY_NAMES=`sed -n "/^library_names/{s/library_names='\([^']*\)'/\1/;p;}" $TARGETDIR/$DSOARCHIVE_BASENAME`
+--- origsrc/httpd-2.2.9/configure.in	2008-06-09 11:04:46.000000000 -0500
++++ src/httpd-2.2.9/configure.in	2008-07-31 11:51:07.921875000 -0500
+@@ -246,6 +246,13 @@
+               LTCFLAGS=""
+               ;;
+       esac
++      case $host in
++          *cygwin*)
++              SH_LIBS="\$(AP_LIBS) \$(EXTRA_LIBS)"
++              SH_LDFLAGS="-no-undefined -shrext .so"
++              CORE_IMPLIB="\$(top_builddir)/libhttpd2core.la"
++              ;;
++      esac
+       ;;
+ esac
+ APACHE_SUBST(SHLTCFLAGS)
+--- origsrc/httpd-2.2.9/modules/dav/fs/config6.m4	2004-11-21 12:50:36.000000000 -0600
++++ src/httpd-2.2.9/modules/dav/fs/config6.m4	2008-07-31 11:16:51.140625000 -0500
+@@ -11,8 +11,8 @@
+ fi
+ 
+ case "$host" in
+-  *os2*)
+-    # OS/2 DLLs must resolve all symbols at build time
++  *os2*|*cygwin*)
++    # DLLs must resolve all symbols at build time
+     # and we need some from main DAV module
+     dav_fs_objects="$dav_fs_objects ../main/mod_dav.la"
+     ;;
+--- origsrc/httpd-2.2.9/modules/dav/lock/config6.m4	2004-11-21 12:50:36.000000000 -0600
++++ src/httpd-2.2.9/modules/dav/lock/config6.m4	2008-08-08 15:45:57.109375000 -0500
+@@ -5,8 +5,8 @@
+ dav_lock_objects="mod_dav_lock.lo locks.lo"
+ 
+ case "$host" in
+-  *os2*)
+-    # OS/2 DLLs must resolve all symbols at build time
++  *os2*|*cygwin*)
++    # DLLs must resolve all symbols at build time and
+     # and we need some from main DAV module
+     dav_lock_objects="$dav_lock_objects ../main/mod_dav.la"
+     ;;
+--- origsrc/httpd-2.2.9/modules/proxy/config.m4	2006-11-27 09:00:56.000000000 -0600
++++ src/httpd-2.2.9/modules/proxy/config.m4	2008-07-31 11:16:51.140625000 -0500
+@@ -20,8 +20,8 @@
+ proxy_balancer_objs="mod_proxy_balancer.lo"
+ 
+ case "$host" in
+-  *os2*)
+-    # OS/2 DLLs must resolve all symbols at build time and
++  *os2*|*cygwin*)
++    # DLLs must resolve all symbols at build time and
+     # these sub-modules need some from the main proxy module
+     proxy_connect_objs="$proxy_connect_objs mod_proxy.la"
+     proxy_ftp_objs="$proxy_ftp_objs mod_proxy.la"
