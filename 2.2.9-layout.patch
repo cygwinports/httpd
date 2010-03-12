@@ -28,7 +28,7 @@
  dsttmp=$dstdir/#inst.$$#
 --- origsrc/httpd-2.2.9/configure.in	2008-06-09 11:04:46.000000000 -0500
 +++ src/httpd-2.2.9/configure.in	2008-07-31 11:51:07.921875000 -0500
-@@@ -501,6 +508,7 @@
+@@ -501,6 +508,7 @@
  esyscmd(./build/config-stubs .)
  
  APACHE_SUBST(progname)

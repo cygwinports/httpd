@@ -6,10 +6,11 @@ PATCH_URI="
 	2.2.9-no-undefined.patch
 	2.2.9-apr_pool.patch
 	2.2.9-docs.patch
-	2.2.9-libtool2.2.patch
 "
 
 SRC_DIR="httpd-${PV}"
+
+DEPS_PATH="/usr/lib/apache2"
 
 CYGCONF_ARGS="
 	--sysconfdir=/etc/${PN}
@@ -64,6 +65,7 @@ CYGCONF_ARGS="
 	--with-pcre=/usr
 	--with-ssl=/usr
 	--with-mpm=prefork
+	--with-conf-name=httpd
 	--with-program-name=httpd2
 "
 MAKEOPTS+=" -j1"
@@ -74,31 +76,31 @@ src_install() {
 		cgidir=/usr/share/apache2/cgi-bin \
 		htdocsdir=/usr/share/apache2/htdocs
 
-	keepdir /etc/apache2/conf.d /var/log/apache2
+	keepdir /etc/apache2/conf.d /var/log/apache2 /var/run/apache2
 	# let postinstall handle these
-	rm ${D}/etc/apache2/extra/*
+	rm ${D}/etc/apache2/extra/* ${D}/etc/apache2/httpd.conf
 
 	mv ${D}/usr/sbin/ab.exe ${D}/usr/sbin/ab2.exe
-	mv ${D}/usr/sbin/apachectl${D}/usr/sbin/apachectl2
+	mv ${D}/usr/sbin/apachectl ${D}/usr/sbin/apachectl2
 	mv ${D}/usr/sbin/apxs ${D}/usr/sbin/apxs2
 	mv ${D}/usr/sbin/checkgid.exe ${D}/usr/sbin/checkgid2.exe
-	mv ${D}/usr/sbin/dbmmanage${D}/usr/bin/dbmmanage2
+	mv ${D}/usr/sbin/dbmmanage ${D}/usr/bin/dbmmanage2
 	mv ${D}/usr/sbin/htcacheclean.exe ${D}/usr/bin/htcacheclean2.exe
-	mv ${D}/usr/sbin/htdbm.exe${D}/usr/bin/htdbm2.exe
+	mv ${D}/usr/sbin/htdbm.exe ${D}/usr/bin/htdbm2.exe
 	mv ${D}/usr/sbin/htdigest.exe ${D}/usr/bin/htdigest2.exe
 	mv ${D}/usr/sbin/htpasswd.exe ${D}/usr/bin/htpasswd2.exe
-	mv ${D}/usr/sbin/httxt2dbm.exe${D}/usr/sbin/httxt2dbm2.exe
+	mv ${D}/usr/sbin/httxt2dbm.exe ${D}/usr/sbin/httxt2dbm2.exe
 	mv ${D}/usr/sbin/logresolve.exe ${D}/usr/sbin/logresolve2.exe
 	mv ${D}/usr/sbin/rotatelogs.exe ${D}/usr/sbin/rotatelogs2.exe
-	mv ${D}/usr/share/man/man1/dbmmanage.1${D}/usr/share/man/man1/dbmmanage2.1
-	mv ${D}/usr/share/man/man1/htdbm.1${D}/usr/share/man/man1/htdbm2.1
+	mv ${D}/usr/share/man/man1/dbmmanage.1 ${D}/usr/share/man/man1/dbmmanage2.1
+	mv ${D}/usr/share/man/man1/htdbm.1 ${D}/usr/share/man/man1/htdbm2.1
 	mv ${D}/usr/share/man/man1/htdigest.1 ${D}/usr/share/man/man1/htdigest2.1
 	mv ${D}/usr/share/man/man1/htpasswd.1 ${D}/usr/share/man/man1/htpasswd2.1
 	mv ${D}/usr/share/man/man8/ab.8 ${D}/usr/share/man/man8/ab2.8
-	mv ${D}/usr/share/man/man8/apachectl.8${D}/usr/share/man/man8/apachectl2.8
+	mv ${D}/usr/share/man/man8/apachectl.8 ${D}/usr/share/man/man8/apachectl2.8
 	mv ${D}/usr/share/man/man8/apxs.8 ${D}/usr/share/man/man8/apxs2.8
 	mv ${D}/usr/share/man/man8/htcacheclean.8 ${D}/usr/share/man/man8/htcacheclean2.8
-	mv ${D}/usr/share/man/man8/httpd.8${D}/usr/share/man/man8/httpd2.8
+	mv ${D}/usr/share/man/man8/httpd.8 ${D}/usr/share/man/man8/httpd2.8
 	mv ${D}/usr/share/man/man8/logresolve.8 ${D}/usr/share/man/man8/logresolve2.8
 	mv ${D}/usr/share/man/man8/rotatelogs.8 ${D}/usr/share/man/man8/rotatelogs2.8
 	rm -f ${D}/usr/share/man/man8/suexec.8
