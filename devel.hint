@@ -1,0 +1,8 @@
+category: Web
+requires: apache2 libapr1-devel libaprutil1-devel libpcre-devel
+external-source: apache2
+sdesc: "Apache web server (DSO development)"
+ldesc: "The Apache HTTP Server Project is a collaborative software 
+development effort aimed at creating a robust, commercial-grade, 
+featureful, and freely-available source code implementation of an HTTP 
+(Web) server."

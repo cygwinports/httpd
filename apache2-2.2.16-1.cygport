@@ -1,6 +1,8 @@
 DESCRIPTION="Apache HTTP Server"
 HOMEPAGE="http://httpd.apache.org/"
 SRC_URI="mirror://apache/httpd/httpd-${PV}.tar.bz2"
+SRC_DIR="httpd-${PV}"
+
 PATCH_URI="
 	2.2.9-layout.patch
 	2.2.9-no-undefined.patch
@@ -8,7 +10,12 @@ PATCH_URI="
 	2.2.9-docs.patch
 "
 
-SRC_DIR="httpd-${PV}"
+PKG_NAMES="${PN} ${PN}-devel"
+PKG_HINTS="setup devel"
+apache2_CONTENTS="--exclude=apxs2* --exclude=build
+                  etc/ usr/bin/ usr/lib/apache2/ usr/sbin/ usr/share/ var/"
+apache2_devel_CONTENTS="usr/include/ usr/lib/lib* usr/sbin/apxs2
+                        usr/share/apache2/build/ usr/share/man/man8/apxs2.*"
 
 DEPS_PATH="/usr/lib/apache2"
 

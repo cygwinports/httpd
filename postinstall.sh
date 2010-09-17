@@ -1,5 +1,3 @@
-#!/bin/sh
-
 mkdir -p /srv/www
 
 for dir in htdocs cgi-bin; do
