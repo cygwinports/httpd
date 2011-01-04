@@ -1,4 +1,4 @@
-mkdir -p /srv/www
+mkdir -p /etc/apache2/extra /srv/www
 
 for dir in htdocs cgi-bin; do
   if [ ! -e /srv/www/$dir ]; then
