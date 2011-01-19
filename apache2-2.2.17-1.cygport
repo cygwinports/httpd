@@ -12,10 +12,8 @@ PATCH_URI="
 
 PKG_NAMES="${PN} ${PN}-devel"
 PKG_HINTS="setup devel"
-apache2_CONTENTS="--exclude=apxs2* --exclude=build
-                  etc/ usr/bin/ usr/lib/apache2/ usr/sbin/ usr/share/ var/"
-apache2_devel_CONTENTS="usr/include/ usr/lib/lib* usr/sbin/apxs2
-                        usr/share/apache2/build/ usr/share/man/man8/apxs2.*"
+apache2_CONTENTS="--exclude=build etc/ usr/bin/ usr/lib/apache2/ usr/sbin/ usr/share/ var/"
+apache2_devel_CONTENTS="usr/include/ usr/lib/lib* usr/share/apache2/build/"
 
 DEPS_PATH="/usr/lib/apache2"
 
