@@ -1,6 +1,7 @@
 DESCRIPTION="Apache HTTP Server"
 HOMEPAGE="http://httpd.apache.org/"
-SRC_URI="mirror://apache/httpd/httpd-${PV}.tar.bz2"
+SRC_URI="mirror://apache/httpd/httpd-${PV}.tar.bz2
+         httpd2-config"
 SRC_DIR="httpd-${PV}"
 
 PATCH_URI="
@@ -80,6 +81,8 @@ src_install() {
 	cyginstall \
 		cgidir=/usr/share/apache2/cgi-bin \
 		htdocsdir=/usr/share/apache2/htdocs
+
+	dosbin ${S}/httpd2-config
 
 	keepdir /etc/apache2/conf.d /var/log/apache2 /var/run/apache2
 	# let postinstall handle these
