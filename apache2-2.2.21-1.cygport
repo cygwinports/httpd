@@ -9,6 +9,7 @@ PATCH_URI="
 	2.2.9-no-undefined.patch
 	2.2.9-apr_pool.patch
 	2.2.9-docs.patch
+	2.2.21-apxs-e.patch
 "
 
 PKG_NAMES="${PN} ${PN}-devel"

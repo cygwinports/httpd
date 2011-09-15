@@ -1,0 +1,18 @@
+--- origsrc/httpd-2.2.21/support/apxs.in	2011-09-15 15:40:51.844758200 -0500
++++ src/httpd-2.2.21/support/apxs.in	2011-09-15 16:30:54.441496900 -0500
+@@ -327,6 +327,7 @@ if ($opt_q) {
+     print "$result\n";
+ }
+ 
++if ($opt_c or $opt_i) {
+ my $apr_config = get_vars("APR_CONFIG");
+ 
+ if (! -x "$apr_config") {
+@@ -348,6 +349,7 @@ my $apr_includedir = `$apr_config --incl
+ chomp($apr_includedir);
+ my $apu_includedir = `$apu_config --includes`;
+ chomp($apu_includedir);
++}
+ 
+ if ($opt_c) {
+     ##
