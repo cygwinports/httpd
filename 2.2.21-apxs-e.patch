@@ -1,18 +1,19 @@
---- origsrc/httpd-2.2.21/support/apxs.in	2011-09-15 15:40:51.844758200 -0500
-+++ src/httpd-2.2.21/support/apxs.in	2011-09-15 16:30:54.441496900 -0500
-@@ -327,6 +327,7 @@ if ($opt_q) {
-     print "$result\n";
- }
+--- origsrc/httpd-2.2.21/support/apxs.in	2011-09-21 13:19:52.789478800 -0500
++++ src/httpd-2.2.21/support/apxs.in	2011-09-21 13:21:05.754652200 -0500
+@@ -329,14 +329,14 @@ if ($opt_q) {
  
-+if ($opt_c or $opt_i) {
  my $apr_config = get_vars("APR_CONFIG");
  
- if (! -x "$apr_config") {
-@@ -348,6 +349,7 @@ my $apr_includedir = `$apr_config --incl
- chomp($apr_includedir);
- my $apu_includedir = `$apu_config --includes`;
- chomp($apu_includedir);
-+}
+-if (! -x "$apr_config") {
++if (($opt_c or $opt_i) and ! -x "$apr_config") {
+     error("$apr_config not found!");
+     exit(1);
+ }
  
- if ($opt_c) {
-     ##
+ my $apu_config = get_vars("APU_CONFIG");
+ 
+-if (! -x "$apu_config") {
++if (($opt_c or $opt_i) and ! -x "$apu_config") {
+     error("$apu_config not found!");
+     exit(1);
+ }
