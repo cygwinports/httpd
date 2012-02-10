@@ -12,10 +12,12 @@ PATCH_URI="
 	2.2.21-apxs-e.patch
 "
 
-PKG_NAMES="${PN} ${PN}-devel"
-PKG_HINTS="setup devel"
-apache2_CONTENTS="--exclude=build etc/ usr/bin/ usr/lib/apache2/ usr/sbin/ usr/share/ var/"
+PKG_NAMES="${PN} ${PN}-devel ${PN}-manual"
+PKG_HINTS="setup devel manual"
+apache2_CONTENTS="--exclude=build --exclude=manual
+                  etc/ usr/bin/ usr/lib/apache2/ usr/sbin/ usr/share/ var/"
 apache2_devel_CONTENTS="usr/include/ usr/lib/lib* usr/share/apache2/build/"
+apache2_manual_CONTENTS="usr/share/apache2/manual/"
 
 DEPS_PATH="/usr/lib/apache2"
 
