@@ -10,13 +10,17 @@ PATCH_URI="
 	2.2.9-apr_pool.patch
 	2.2.9-docs.patch
 	2.2.21-apxs-e.patch
+	2.2.22-pcre830.patch
 "
 
 PKG_NAMES="${PN} ${PN}-devel ${PN}-manual"
 PKG_HINTS="setup devel manual"
-apache2_CONTENTS="--exclude=build --exclude=manual
-                  etc/ usr/bin/ usr/lib/apache2/ usr/sbin/ usr/share/ var/"
-apache2_devel_CONTENTS="usr/include/ usr/lib/lib* usr/share/apache2/build/"
+apache2_CONTENTS="etc/ usr/bin/ usr/lib/apache2/ usr/sbin/
+                  usr/share/apache2/build/config_vars.mk
+                  usr/share/apache2/cgi-bin/ usr/share/apache2/error/
+                  usr/share/apache2/htdocs/ usr/share/apache2/icons/
+                  usr/share/doc/ usr/share/man/ var/"
+apache2_devel_CONTENTS="--exclude=config_vars.mk usr/include/ usr/lib/lib* usr/share/apache2/build/"
 apache2_manual_CONTENTS="usr/share/apache2/manual/"
 
 DEPS_PATH="/usr/lib/apache2"
@@ -85,6 +89,9 @@ src_install() {
 		cgidir=/usr/share/apache2/cgi-bin \
 		htdocsdir=/usr/share/apache2/htdocs
 
+	# until apr is rebuilt without static libraries
+	rm -f ${D}/usr/lib/libhttpd2core.a
+
 	dosbin ${S}/httpd2-config
 
 	keepdir /etc/apache2/conf.d /var/log/apache2 /var/run/apache2
@@ -116,3 +123,5 @@ src_install() {
 	mv ${D}/usr/share/man/man8/rotatelogs.8 ${D}/usr/share/man/man8/rotatelogs2.8
 	rm -f ${D}/usr/share/man/man8/suexec.8
 }
+
+KEEP_LA_FILES="none"

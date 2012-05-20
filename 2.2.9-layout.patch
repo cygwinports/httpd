@@ -169,7 +169,7 @@
 +            chomp($apu_libs);
 +            
 +            $opt .= " -rpath $CFG_LIBEXECDIR -module -avoid-version";
-+            $opt .= " $SH_LDFLAGS $CFG_LIBDIR/libhttpd2core.la";
++            $opt .= " $SH_LDFLAGS -lhttpd2core";
 +            $opt .= " ".$apu_libs." ".$apr_libs;
 +        }
 +        else {
