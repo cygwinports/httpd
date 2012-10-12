@@ -1,4 +1,11 @@
-DESCRIPTION="Apache HTTP Server"
+NAME="apache2"
+VERSION=2.2.23
+RELEASE=1
+CATEGORY="Web"
+SUMMARY="Apache HTTP Server"
+DESCRIPTION="The Apache HTTP Server Project is a collaborative software
+development effort aimed at creating a robust, commercial-grade, featureful,
+and freely-available source code implementation of an HTTP (Web) server."
 HOMEPAGE="http://httpd.apache.org/"
 SRC_URI="mirror://apache/httpd/httpd-${PV}.tar.bz2
          httpd2-config"
@@ -10,17 +17,19 @@ PATCH_URI="
 	2.2.9-apr_pool.patch
 	2.2.9-docs.patch
 	2.2.21-apxs-e.patch
-	2.2.22-pcre830.patch
 "
 
 PKG_NAMES="${PN} ${PN}-devel ${PN}-manual"
-PKG_HINTS="setup devel manual"
+apache2_REQUIRES="csih"
 apache2_CONTENTS="etc/ usr/bin/ usr/lib/apache2/ usr/sbin/
                   usr/share/apache2/build/config_vars.mk
                   usr/share/apache2/cgi-bin/ usr/share/apache2/error/
                   usr/share/apache2/htdocs/ usr/share/apache2/icons/
                   usr/share/doc/ usr/share/man/ var/"
+apache2_devel_SUMMARY="${SUMMARY} (DSO development)"
+apache2_devel_REQUIRES="libapr1-devel libaprutil1-devel libpcre-devel"
 apache2_devel_CONTENTS="--exclude=config_vars.mk usr/include/ usr/lib/lib* usr/share/apache2/build/"
+apache2_manual_SUMMARY="${SUMMARY} (user manual)"
 apache2_manual_CONTENTS="usr/share/apache2/manual/"
 
 DEPS_PATH="/usr/lib/apache2"
@@ -91,6 +100,11 @@ src_install() {
 
 	# until apr is rebuilt without static libraries
 	rm -f ${D}/usr/lib/libhttpd2core.a
+	sed -i -e '/^old_library=/d' ${D}/usr/lib/libhttpd2core.la
+
+	# These modules may be linked into others, so do not allow the
+	# automatic postinstall to remove their implibs
+	rm -f ${D}/usr/lib/apache2/mod_{dav,proxy}.{a,la}
 
 	dosbin ${S}/httpd2-config
 
