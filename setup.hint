@@ -1,7 +1,0 @@
-category: Web
-requires: crypt csih libapr1 libaprutil1 libgcc1 libopenldap2_3_0 libopenssl100 libpcre1 zlib0
-sdesc: "Apache web server"
-ldesc: "The Apache HTTP Server Project is a collaborative software 
-development effort aimed at creating a robust, commercial-grade, 
-featureful, and freely-available source code implementation of an HTTP 
-(Web) server."
