@@ -7,9 +7,9 @@ DESCRIPTION="The Apache HTTP Server Project is a collaborative software
 development effort aimed at creating a robust, commercial-grade, featureful,
 and freely-available source code implementation of an HTTP (Web) server."
 HOMEPAGE="http://httpd.apache.org/"
-SRC_URI="mirror://apache/httpd/httpd-${PV}.tar.bz2
+SRC_URI="mirror://apache/httpd/httpd-${VERSION}.tar.bz2
          httpd2-config"
-SRC_DIR="httpd-${PV}"
+SRC_DIR="httpd-${VERSION}"
 
 PATCH_URI="
 	2.2.9-layout.patch
@@ -19,7 +19,7 @@ PATCH_URI="
 	2.2.21-apxs-e.patch
 "
 
-PKG_NAMES="${PN} ${PN}-devel ${PN}-manual"
+PKG_NAMES="${NAME} ${NAME}-devel ${NAME}-manual"
 apache2_REQUIRES="csih"
 apache2_CONTENTS="etc/ usr/bin/ usr/lib/apache2/ usr/sbin/
                   usr/share/apache2/build/config_vars.mk
@@ -35,9 +35,9 @@ apache2_manual_CONTENTS="usr/share/apache2/manual/"
 DEPS_PATH="/usr/lib/apache2"
 
 CYGCONF_ARGS="
-	--sysconfdir=/etc/${PN}
-	--libexecdir=/usr/lib/${PN}
-	--datadir=/usr/share/${PN}
+	--sysconfdir=/etc/${NAME}
+	--libexecdir=/usr/lib/${NAME}
+	--datadir=/usr/share/${NAME}
 	--enable-layout=Cygwin
 	--enable-mods-shared=all
 	--enable-auth-digest
@@ -45,7 +45,7 @@ CYGCONF_ARGS="
 	--enable-authn-anon
 	--enable-authn-dbd
 	--enable-authn-dbm
-	--enable-authnz-ldap
+	${ARCH_i686+--enable-authnz-ldap}
 	--enable-authz-dbm
 	--enable-authz-owner
 	--enable-dbd
@@ -55,7 +55,7 @@ CYGCONF_ARGS="
 	--enable-ext-filter
 	--enable-substitute
 	--enable-deflate
-	--enable-ldap
+	${ARCH_i686+--enable-ldap}
 	--enable-logio
 	--enable-mime-magic
 	--enable-cern-meta
