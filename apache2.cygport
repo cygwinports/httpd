@@ -21,7 +21,7 @@ PATCH_URI="
 
 PKG_NAMES="${NAME} ${NAME}-devel ${NAME}-manual"
 apache2_REQUIRES="csih"
-apache2_CONTENTS="etc/ usr/bin/ usr/lib/apache2/ usr/sbin/
+apache2_CONTENTS="etc/apache2/ etc/p*/ usr/bin/ usr/lib/apache2/ usr/sbin/
                   usr/share/apache2/build/config_vars.mk
                   usr/share/apache2/cgi-bin/ usr/share/apache2/error/
                   usr/share/apache2/htdocs/ usr/share/apache2/icons/
