@@ -1,6 +1,6 @@
 NAME="apache2"
 VERSION=2.2.23
-RELEASE=2
+RELEASE=3
 CATEGORY="Web"
 SUMMARY="Apache HTTP Server"
 DESCRIPTION="The Apache HTTP Server Project is a collaborative software
@@ -45,7 +45,7 @@ CYGCONF_ARGS="
 	--enable-authn-anon
 	--enable-authn-dbd
 	--enable-authn-dbm
-	${ARCH_i686+--enable-authnz-ldap}
+	--enable-authnz-ldap
 	--enable-authz-dbm
 	--enable-authz-owner
 	--enable-dbd
@@ -55,7 +55,7 @@ CYGCONF_ARGS="
 	--enable-ext-filter
 	--enable-substitute
 	--enable-deflate
-	${ARCH_i686+--enable-ldap}
+	--enable-ldap
 	--enable-logio
 	--enable-mime-magic
 	--enable-cern-meta
@@ -100,7 +100,7 @@ src_install() {
 
 	# until apr is rebuilt without static libraries
 	rm -f ${D}/usr/lib/libhttpd2core.a
-	sed -i -e '/^old_library=/d' ${D}/usr/lib/libhttpd2core.la
+	sed -i -e '/^old_library=/s/=.*/=/' ${D}/usr/lib/libhttpd2core.la
 
 	# These modules may be linked into others, so do not allow the
 	# automatic postinstall to remove their implibs
