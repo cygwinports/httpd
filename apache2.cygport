@@ -1,6 +1,6 @@
 NAME="apache2"
-VERSION=2.2.23
-RELEASE=3
+VERSION=2.2.27
+RELEASE=1
 CATEGORY="Web"
 SUMMARY="Apache HTTP Server"
 DESCRIPTION="The Apache HTTP Server Project is a collaborative software
