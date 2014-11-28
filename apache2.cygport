@@ -1,6 +1,6 @@
 NAME="apache2"
 VERSION=2.2.29
-RELEASE=1
+RELEASE=2
 CATEGORY="Web"
 SUMMARY="Apache HTTP Server"
 DESCRIPTION="The Apache HTTP Server Project is a collaborative software
@@ -34,6 +34,7 @@ apache2_manual_CONTENTS="usr/share/apache2/manual/"
 
 DEPS_PATH="/usr/lib/apache2"
 
+CFLAGS+=" -DFD_SETSIZE=1024"
 CYGCONF_ARGS="
 	--sysconfdir=/etc/${NAME}
 	--libexecdir=/usr/lib/${NAME}
