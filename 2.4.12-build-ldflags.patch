@@ -1,0 +1,14 @@
+--- origsrc/httpd-2.4.12/configure.in	2015-01-22 11:33:07.000000000 -0600
++++ src/httpd-2.4.12/configure.in	2015-05-21 13:13:40.962641500 -0500
+@@ -684,6 +684,11 @@ dnl enable_so tells us if *any* modules
+ 
+ if test "$enable_so" = "yes" -o "$enable_so" = "static"; then
+   case $host in
++    *cygwin*)
++      APR_ADDTO(HTTPD_LDFLAGS, [-Wl,--export-all-symbols,--out-implib,libhttpd.dll.a])
++      APR_ADDTO(SH_LIBS, [\$(AP_LIBS) \$(EXTRA_LIBS)])
++      APR_ADDTO(SH_LDFLAGS, [-no-undefined -shrext .so -Wl,\$(top_builddir)/libhttpd.dll.a])
++      ;;
+     *-ibm-aix*)
+       APR_ADDTO(HTTPD_LDFLAGS, [-Wl,-uXML_Parse -Wl,-bE:$abs_builddir/server/httpd.exp])
+       APR_ADDTO(SH_LDFLAGS, [\$(EXTRA_LDFLAGS) \$(EXTRA_LIBS)])

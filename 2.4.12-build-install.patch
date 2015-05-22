@@ -1,0 +1,17 @@
+--- origsrc/httpd-2.4.12/build/install.sh	2006-07-11 15:55:32.000000000 -0500
++++ src/httpd-2.4.12/build/install.sh	2015-05-21 12:30:17.851088300 -0500
+@@ -102,6 +102,14 @@ fi
+ src="$src$ext"
+ dst="$dst$ext"
+ 
++# Automagically append .exe - this is needed because libtool will not pass
++# unknown options to an install program, so we are unable to use "-e .exe"
++# in this case.
++if [ -f "$src.exe" ]; then
++  src="$src.exe"
++  dst="$dst.exe"
++fi
++
+ #  Make a temp file name in the proper directory.
+ dstdir=`dirname $dst`
+ dsttmp=$dstdir/#inst.$$#

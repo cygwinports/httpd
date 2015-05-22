@@ -1,0 +1,159 @@
+NAME="httpd"
+VERSION=2.4.12
+RELEASE=1
+CATEGORY="Web"
+SUMMARY="Apache HTTP Server"
+DESCRIPTION="The Apache HTTP Server Project is a collaborative software
+development effort aimed at creating a robust, commercial-grade, featureful,
+and freely-available source code implementation of an HTTP (Web) server."
+HOMEPAGE="http://httpd.apache.org/"
+SRC_URI="mirror://apache/httpd/httpd-${VERSION}.tar.bz2
+         httpd.init"
+SRC_DIR="httpd-${VERSION}"
+PATCH_URI="
+	2.4.12-apr-threads.patch
+	2.4.12-apxs-link.patch
+	2.4.12-build-install.patch
+	2.4.12-build-ldflags.patch
+	2.4.12-conf.patch
+	2.4.12-config-layout.patch
+	2.4.12-modules-static.patch
+	2.4.12-ssl-ldadd.patch
+"
+
+PKG_NAMES="${NAME} ${NAME}-devel ${NAME}-manual ${NAME}-tools
+	${NAME}-mod_ldap ${NAME}-mod_lua ${NAME}-mod_proxy_html ${NAME}-mod_ssl"
+#httpd_OBSOLETES="apache2"
+httpd_CONTENTS="
+	--exclude=mod_*ldap.so
+	--exclude=mod_lua.so
+	--exclude=mod_proxy_html.so --exclude=mod_xml2enc.so
+	--exclude=mod_ssl.so
+	etc/defaults/etc/httpd/conf/
+	etc/defaults/srv/www/
+	etc/httpd/
+	etc/p*/
+	etc/rc.d/init.d/
+	usr/lib/httpd/build/config_vars.mk
+	usr/lib/httpd/modules/
+	usr/sbin/
+	usr/share/httpd/error/
+	usr/share/httpd/icons/
+	usr/share/doc/
+	usr/share/man/man8/
+	var/log/httpd/
+	var/run/httpd/
+"
+#httpd_devel_OBSOLETES="apache2-devel"
+httpd_devel_SUMMARY="${SUMMARY} (DSO development)"
+httpd_devel_REQUIRES="libapr1-devel libaprutil1-devel"
+httpd_devel_CONTENTS="
+	--exclude=config_vars.mk
+	usr/bin/apxs
+	usr/include/httpd/
+	usr/lib/httpd/build/
+	usr/lib/libhttpd.dll.a
+	usr/share/man/man1/apxs.1*
+"
+#httpd_manual_OBSOLETES="apache2-manual"
+httpd_manual_SUMMARY="${SUMMARY} (user manual)"
+httpd_manual_CONTENTS="usr/share/httpd/manual/"
+httpd_tools_SUMMARY="${SUMMARY} (tools)"
+httpd_tools_CONTENTS="
+	--exclude=apxs*
+	usr/bin/
+	usr/share/man/man1/
+"
+# extra dependency on openldap
+httpd_mod_ldap_SUMMARY="${SUMMARY} (LDAP support)"
+httpd_mod_ldap_CONTENTS="
+	usr/lib/httpd/modules/mod_*ldap.so
+"
+# extra dependency on lua
+httpd_mod_lua_SUMMARY="${SUMMARY} (Lua scripting support)"
+httpd_mod_lua_CONTENTS="
+	usr/lib/httpd/modules/mod_lua.so
+"
+# extra dependency on libxml2
+httpd_mod_proxy_html_SUMMARY="${SUMMARY} (XHTML filter support)"
+httpd_mod_proxy_html_CONTENTS="
+	usr/lib/httpd/modules/mod_proxy_html.so
+	usr/lib/httpd/modules/mod_xml2enc.so
+"
+# extra dependency on openssl
+httpd_mod_ssl_SUMMARY="${SUMMARY} (SSL support)"
+httpd_mod_ssl_CONTENTS="
+	usr/lib/httpd/modules/mod_ssl.so
+"
+
+DEPS_PATH="/usr/sbin"
+
+CFLAGS+=" -DFD_SETSIZE=1024"
+
+# The following modules are deps for others, and hence are builtin:
+#
+# cache: cache_*
+# dav: dav_*
+# proxy: proxy_*
+# session: session_*
+# unixd: mod_dnssd
+#
+# While there is technically a way to link modules against each other
+# (see the os2 snippets in the relevant config*.m4 files), and we indeed
+# have to rely on that for mod_perl and libapreq2, it is much simpler to
+# simply link in these API-providing modules.
+CYGCONF_ARGS="
+	--prefix=/etc/httpd
+	--exec-prefix=/usr
+	--bindir=/usr/bin
+	--sbindir=/usr/sbin
+	--includedir=/usr/include/httpd
+	--libdir=/usr/lib
+	--libexecdir=/usr/lib/httpd/modules
+	--sbindir=/usr/sbin
+	--datadir=/usr/share/httpd
+	--sysconfdir=/etc/httpd/conf
+	--with-installbuilddir=/usr/lib/httpd/build
+	--enable-layout=Cygwin
+	--enable-mods-shared=all
+	--enable-mods-static=cache,dav,proxy,session,unixd
+	--disable-suexec
+	--with-apr=/usr --with-apr-util=/usr
+	--with-pcre=/usr
+	--with-ssl=/usr
+	--with-mpm=prefork
+"
+MAKEOPTS+=" -j1"
+
+src_install() {
+	cd ${B}
+	cyginstall
+
+	dolib libhttpd.dll.a
+
+	exeinto /etc/rc.d/init.d
+	newexe ${S}/httpd.init httpd
+
+	keepdir /etc/httpd/conf{.modules,}.d /var/log/httpd /var/run/httpd
+	# allow everything to be referenced in httpd.conf with relative paths
+	dosym ../../var/log/httpd /etc/httpd/logs
+	dosym ../../var/run/httpd /etc/httpd/run
+	dosym ../../usr/lib/httpd/modules /etc/httpd/modules
+	sed -i -e 's|/usr/lib/httpd/||' ${D}/etc/httpd/conf/httpd.conf
+
+	# let postinstall handle these
+	rm -fr ${D}/etc/httpd/original
+	make_etc_defaults /etc/httpd/conf /srv/www
+
+	# fix man page paths
+	sed -i -e "s|/usr/local/apache2|/etc/httpd|" \
+		${D}/usr/share/man/man8/httpd.8
+
+	# requires perl, use htdbm instead
+	rm -f ${D}/usr/bin/dbmmanage ${D}/usr/share/man/man1/dbmmanage.*
+
+	# not supported
+	rm -f ${D}/usr/share/man/man8/suexec.8
+}
+
+KEEP_LA_FILES="none"

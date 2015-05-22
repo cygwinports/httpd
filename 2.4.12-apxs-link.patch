@@ -1,0 +1,30 @@
+--- origsrc/httpd-2.4.12/support/apxs.in	2013-12-26 12:01:53.000000000 -0600
++++ src/httpd-2.4.12/support/apxs.in	2015-05-22 02:10:14.057713200 -0500
+@@ -451,22 +451,22 @@ if ($opt_c) {
+     }
+ 
+     my $ldflags = "$CFG_LDFLAGS";
+-    if ($opt_p == 1) {
+         
+-        my $apr_libs=`$apr_config --cflags --ldflags --link-libtool --libs`;
++        my $apr_libs=`$apr_config --cflags --ldflags --link-libtool`;
+         chomp($apr_libs);
+         my $apu_libs="";
+         if ($apr_major_version < 2) {
+-            $apu_libs=`$apu_config --ldflags --link-libtool --libs`;
++            $apu_libs=`$apu_config --ldflags --link-libtool`;
+             chomp($apu_libs);
+         }
+         
+         $opt .= " ".$apu_libs." ".$apr_libs;
+-    }
+-    else {
++
++    if ($opt_p == 0) {
+         my $apr_ldflags=`$apr_config --ldflags`;
+         chomp($apr_ldflags);
+         $opt .= " -rpath $CFG_LIBEXECDIR -module -avoid-version $apr_ldflags";
++        $opt .= " -no-undefined -shrext .so -lhttpd";
+     }
+ 
+     push(@cmds, "$libtool $ltflags --mode=link $CFG_CC $ldflags -o $dso_file $opt $lo");

@@ -1,0 +1,61 @@
+--- origsrc/httpd-2.4.12/acinclude.m4	2014-01-05 02:37:21.000000000 -0600
++++ src/httpd-2.4.12/acinclude.m4	2015-05-22 01:48:39.082772200 -0500
+@@ -425,7 +425,7 @@ AC_DEFUN(APACHE_ENABLE_MODULES,[
+        module_default=no
+        module_selection=none
+     else
+-      for i in $enableval; do
++      for i in `echo $enableval | sed 's/,/ /g'`; do
+         if test "$i" = "all" -o "$i" = "most" -o "$i" = "few" -o "$i" = "reallyall"
+         then
+           module_selection=$i
+@@ -439,7 +439,7 @@ AC_DEFUN(APACHE_ENABLE_MODULES,[
+   
+   AC_ARG_ENABLE(mods-shared,
+   APACHE_HELP_STRING(--enable-mods-shared=MODULE-LIST,Space-separated list of shared modules to enable | "all" | "most" | "few" | "reallyall"),[
+-    for i in $enableval; do
++    for i in `echo $enableval | sed 's/,/ /g'`; do
+       if test "$i" = "all" -o "$i" = "most" -o "$i" = "few" -o "$i" = "reallyall"
+       then
+         module_selection=$i
+@@ -453,7 +453,7 @@ AC_DEFUN(APACHE_ENABLE_MODULES,[
+   
+   AC_ARG_ENABLE(mods-static,
+   APACHE_HELP_STRING(--enable-mods-static=MODULE-LIST,Space-separated list of static modules to enable | "all" | "most" | "few" | "reallyall"),[
+-    for i in $enableval; do
++    for i in `echo $enableval | sed 's/,/ /g'`; do
+       if test "$i" = "all" -o "$i" = "most" -o "$i" = "few" -o "$i" = "reallyall"; then
+         module_selection=$i
+         module_default=static
+--- origsrc/httpd-2.4.12/modules/dav/fs/config6.m4	2012-01-22 12:34:56.000000000 -0600
++++ src/httpd-2.4.12/modules/dav/fs/config6.m4	2015-05-22 02:25:33.213431100 -0500
+@@ -4,8 +4,10 @@ APACHE_MODPATH_INIT(dav/fs)
+ 
+ dav_fs_objects="mod_dav_fs.lo dbm.lo lock.lo repos.lo"
+ 
+-if test "x$enable_dav" != "x"; then
+-  dav_fs_enable=$enable_dav
++if test "$enable_dav" = "shared"; then
++  dav_fs_enable=shared
++elif test "$enable_dav" = "yes"; then
++  dav_fs_enable=yes
+ else
+   dav_fs_enable=$dav_enable
+ fi
+--- origsrc/httpd-2.4.12/modules/session/config.m4	2012-08-02 08:05:28.000000000 -0500
++++ src/httpd-2.4.12/modules/session/config.m4	2015-05-22 02:27:26.162773900 -0500
+@@ -1,9 +1,11 @@
+ dnl modules enabled in this directory by default
+ 
+-if test -z "$enable_session" ; then
+-  session_mods_enable=most
++if test "$enable_session" = "shared"; then
++  session_mods_enable=shared
++elif test "$enable_session" = "yes"; then
++  session_mods_enable=yes
+ else
+-  session_mods_enable=$enable_session
++  session_mods_enable=most
+ fi
+ 
+ dnl Session

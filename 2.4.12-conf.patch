@@ -1,0 +1,32 @@
+--- origsrc/httpd-2.4.12/docs/conf/httpd.conf.in	2012-11-07 21:05:38.000000000 -0600
++++ src/httpd-2.4.12/docs/conf/httpd.conf.in	2015-05-21 12:29:12.830831800 -0500
+@@ -65,6 +65,8 @@ Listen @@Port@@
+ #
+ @@LoadModule@@
+ 
++IncludeOptional conf.modules.d/*.conf
++
+ <IfModule unixd_module>
+ #
+ # If you wish httpd to run as a different user or group, you must run
+@@ -74,8 +76,8 @@ Listen @@Port@@
+ # It is usually good practice to create a dedicated user and group for
+ # running httpd, as with most system services.
+ #
+-User daemon
+-Group daemon
++#User daemon
++#Group daemon
+ 
+ </IfModule>
+ 
+@@ -397,6 +399,9 @@ Include @rel_sysconfdir@/extra/proxy-htm
+ 
+ # Secure (SSL/TLS) connections
+ #Include @rel_sysconfdir@/extra/httpd-ssl.conf
++
++IncludeOptional conf.d/*.conf
++
+ #
+ # Note: The following must must be present to support
+ #       starting without SSL on platforms with no /dev/random equivalent

@@ -1,0 +1,30 @@
+--- origsrc/httpd-2.4.12/config.layout	2012-04-17 09:01:41.000000000 -0500
++++ src/httpd-2.4.12/config.layout	2015-05-22 00:17:40.616635100 -0500
+@@ -370,3 +370,27 @@
+     logfiledir:      ${localstatedir}/log/httpd
+     proxycachedir:   ${localstatedir}/cache/httpd
+ </Layout>
++
++# Cygwin layout
++<Layout Cygwin>
++    prefix:          /etc/httpd
++    exec_prefix:     /usr
++    sysconfdir:      ${prefix}/conf
++    bindir:          ${exec_prefix}/bin
++    sbindir:         ${exec_prefix}/sbin
++    includedir:      /usr/include/httpd
++    libdir:          ${exec_prefix}/lib
++    libexecdir:      ${libdir}/httpd/modules
++    installbuilddir: ${libdir}/httpd/build
++    mandir:          /usr/share/man
++    datadir:         /usr/share/httpd
++    iconsdir:        ${datadir}/icons
++    htdocsdir:       /srv/www/htdocs
++    manualdir:       ${datadir}/manual
++    cgidir:          /srv/www/cgi-bin
++    errordir:        ${datadir}/error
++    localstatedir:   /var
++    runtimedir:      ${localstatedir}/run/httpd
++    logfiledir:      ${localstatedir}/log/httpd
++    proxycachedir:   ${localstatedir}/cache/httpd
++</Layout>
