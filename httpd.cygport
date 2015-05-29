@@ -1,6 +1,6 @@
 NAME="httpd"
 VERSION=2.4.12
-RELEASE=1
+RELEASE=2
 CATEGORY="Web"
 SUMMARY="Apache HTTP Server"
 DESCRIPTION="The Apache HTTP Server Project is a collaborative software
@@ -11,7 +11,6 @@ SRC_URI="mirror://apache/httpd/httpd-${VERSION}.tar.bz2
          httpd.init"
 SRC_DIR="httpd-${VERSION}"
 PATCH_URI="
-	2.4.12-apr-threads.patch
 	2.4.12-apxs-link.patch
 	2.4.12-build-install.patch
 	2.4.12-build-ldflags.patch
@@ -97,6 +96,7 @@ CFLAGS+=" -DFD_SETSIZE=1024"
 # proxy: proxy_*
 # session: session_*
 # unixd: mod_dnssd
+# watchdog: heartbeat
 #
 # While there is technically a way to link modules against each other
 # (see the os2 snippets in the relevant config*.m4 files), and we indeed
@@ -116,12 +116,13 @@ CYGCONF_ARGS="
 	--with-installbuilddir=/usr/lib/httpd/build
 	--enable-layout=Cygwin
 	--enable-mods-shared=all
-	--enable-mods-static=cache,dav,proxy,session,unixd
+	--enable-mods-static=cache,dav,proxy,session,unixd,watchdog
+	--enable-mpms-shared=all --with-mpm=prefork
+	--enable-cgi --enable-cgid
 	--disable-suexec
 	--with-apr=/usr --with-apr-util=/usr
 	--with-pcre=/usr
 	--with-ssl=/usr
-	--with-mpm=prefork
 "
 MAKEOPTS+=" -j1"
 
