@@ -1,6 +1,6 @@
 NAME="httpd"
 VERSION=2.4.12
-RELEASE=2
+RELEASE=3
 CATEGORY="Web"
 SUMMARY="Apache HTTP Server"
 DESCRIPTION="The Apache HTTP Server Project is a collaborative software
