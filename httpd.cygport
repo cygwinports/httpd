@@ -1,6 +1,6 @@
 NAME="httpd"
-VERSION=2.4.12
-RELEASE=3
+VERSION=2.4.16
+RELEASE=1
 CATEGORY="Web"
 SUMMARY="Apache HTTP Server"
 DESCRIPTION="The Apache HTTP Server Project is a collaborative software
@@ -22,7 +22,7 @@ PATCH_URI="
 
 PKG_NAMES="${NAME} ${NAME}-devel ${NAME}-manual ${NAME}-tools
 	${NAME}-mod_ldap ${NAME}-mod_lua ${NAME}-mod_proxy_html ${NAME}-mod_ssl"
-#httpd_OBSOLETES="apache2"
+httpd_OBSOLETES="apache2"
 httpd_CONTENTS="
 	--exclude=mod_*ldap.so
 	--exclude=mod_lua.so
@@ -43,7 +43,7 @@ httpd_CONTENTS="
 	var/log/httpd/
 	var/run/httpd/
 "
-#httpd_devel_OBSOLETES="apache2-devel"
+httpd_devel_OBSOLETES="apache2-devel"
 httpd_devel_SUMMARY="${SUMMARY} (DSO development)"
 httpd_devel_REQUIRES="libapr1-devel libaprutil1-devel"
 httpd_devel_CONTENTS="
@@ -54,7 +54,7 @@ httpd_devel_CONTENTS="
 	usr/lib/libhttpd.dll.a
 	usr/share/man/man1/apxs.1*
 "
-#httpd_manual_OBSOLETES="apache2-manual"
+httpd_manual_OBSOLETES="apache2-manual"
 httpd_manual_SUMMARY="${SUMMARY} (user manual)"
 httpd_manual_CONTENTS="usr/share/httpd/manual/"
 httpd_tools_SUMMARY="${SUMMARY} (tools)"
