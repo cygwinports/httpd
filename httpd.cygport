@@ -1,5 +1,5 @@
 NAME="httpd"
-VERSION=2.4.16
+VERSION=2.4.18
 RELEASE=1
 CATEGORY="Web"
 SUMMARY="Apache HTTP Server"
@@ -21,9 +21,11 @@ PATCH_URI="
 "
 
 PKG_NAMES="${NAME} ${NAME}-devel ${NAME}-manual ${NAME}-tools
-	${NAME}-mod_ldap ${NAME}-mod_lua ${NAME}-mod_proxy_html ${NAME}-mod_ssl"
+	${NAME}-mod_http2 ${NAME}-mod_ldap ${NAME}-mod_lua
+	${NAME}-mod_proxy_html ${NAME}-mod_ssl"
 httpd_OBSOLETES="apache2"
 httpd_CONTENTS="
+	--exclude=mod_http2.so
 	--exclude=mod_*ldap.so
 	--exclude=mod_lua.so
 	--exclude=mod_proxy_html.so --exclude=mod_xml2enc.so
@@ -52,6 +54,7 @@ httpd_devel_CONTENTS="
 	usr/include/httpd/
 	usr/lib/httpd/build/
 	usr/lib/libhttpd.dll.a
+	usr/lib/libhttpd2core.dll.a
 	usr/share/man/man1/apxs.1*
 "
 httpd_manual_OBSOLETES="apache2-manual"
@@ -62,6 +65,11 @@ httpd_tools_CONTENTS="
 	--exclude=apxs*
 	usr/bin/
 	usr/share/man/man1/
+"
+# extra dependency on nghttp2
+httpd_mod_http2_SUMMARY="${SUMMARY} (HTTP/2 support)"
+httpd_mod_http2_CONTENTS="
+	usr/lib/httpd/modules/mod_http2.so
 "
 # extra dependency on openldap
 httpd_mod_ldap_SUMMARY="${SUMMARY} (LDAP support)"
@@ -131,6 +139,8 @@ src_install() {
 	cyginstall
 
 	dolib libhttpd.dll.a
+	# for compatibility with apache2-2.2
+	dosym libhttpd.dll.a /usr/lib/libhttpd2core.dll.a
 
 	exeinto /etc/rc.d/init.d
 	newexe ${S}/httpd.init httpd
