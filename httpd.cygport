@@ -1,5 +1,5 @@
 NAME="httpd"
-VERSION=2.4.23
+VERSION=2.4.25
 RELEASE=1
 CATEGORY="Web"
 SUMMARY="Apache HTTP Server"
@@ -11,6 +11,12 @@ SRC_URI="mirror://apache/httpd/httpd-${VERSION}.tar.bz2
          httpd.init"
 SRC_DIR="httpd-${VERSION}"
 PATCH_URI="
+	http://pkgs.fedoraproject.org/cgit/rpms/httpd.git/plain/httpd-2.4.2-icons.patch
+	http://pkgs.fedoraproject.org/cgit/rpms/httpd.git/plain/httpd-2.4.4-export.patch
+	http://pkgs.fedoraproject.org/cgit/rpms/httpd.git/plain/httpd-2.4.10-sigint.patch
+	http://pkgs.fedoraproject.org/cgit/rpms/httpd.git/plain/httpd-2.4.17-sslciphdefault.patch
+	http://pkgs.fedoraproject.org/cgit/rpms/httpd.git/plain/httpd-2.4.18-sslmultiproxy.patch
+	http://pkgs.fedoraproject.org/cgit/rpms/httpd.git/plain/httpd-2.4.25-r1778319+.patch
 	2.4.12-apxs-link.patch
 	2.4.12-build-install.patch
 	2.4.12-build-ldflags.patch
