@@ -1,6 +1,6 @@
 NAME="httpd"
 VERSION=2.4.25
-RELEASE=1
+RELEASE=2
 CATEGORY="Web"
 SUMMARY="Apache HTTP Server"
 DESCRIPTION="The Apache HTTP Server Project is a collaborative software
@@ -22,8 +22,7 @@ PATCH_URI="
 	2.4.12-build-ldflags.patch
 	2.4.12-conf.patch
 	2.4.12-config-layout.patch
-	2.4.12-modules-static.patch
-	2.4.12-ssl-ldadd.patch
+	2.4.25-modules-shared.patch
 "
 
 PKG_NAMES="${NAME} ${NAME}-devel ${NAME}-manual ${NAME}-tools
@@ -61,6 +60,7 @@ httpd_devel_CONTENTS="
 	usr/lib/httpd/build/
 	usr/lib/libhttpd.dll.a
 	usr/lib/libhttpd2core.dll.a
+	usr/lib/libmod_*.dll.a
 	usr/share/man/man1/apxs.1*
 "
 httpd_manual_OBSOLETES="apache2-manual"
@@ -99,23 +99,10 @@ httpd_mod_ssl_CONTENTS="
 	usr/lib/httpd/modules/mod_ssl.so
 "
 
-DEPS_PATH="/usr/sbin"
+DEPS_PATH="/usr/sbin:/usr/lib/httpd/modules"
 
 CFLAGS+=" -DFD_SETSIZE=1024"
 
-# The following modules are deps for others, and hence are builtin:
-#
-# cache: cache_*
-# dav: dav_*
-# proxy: proxy_*
-# session: session_*
-# unixd: mod_dnssd
-# watchdog: heartbeat
-#
-# While there is technically a way to link modules against each other
-# (see the os2 snippets in the relevant config*.m4 files), and we indeed
-# have to rely on that for mod_perl and libapreq2, it is much simpler to
-# simply link in these API-providing modules.
 CYGCONF_ARGS="
 	--prefix=/etc/httpd
 	--exec-prefix=/usr
@@ -130,7 +117,6 @@ CYGCONF_ARGS="
 	--with-installbuilddir=/usr/lib/httpd/build
 	--enable-layout=Cygwin
 	--enable-mods-shared=all
-	--enable-mods-static=cache,dav,proxy,session,unixd,watchdog
 	--enable-mpms-shared=all --with-mpm=prefork
 	--enable-cgi --enable-cgid
 	--disable-suexec
@@ -147,6 +133,23 @@ src_install() {
 	dolib libhttpd.dll.a
 	# for compatibility with apache2-2.2
 	dosym libhttpd.dll.a /usr/lib/libhttpd2core.dll.a
+
+	# The following modules are deps for others, and hence require
+	# linking into their reverse dependencies:
+	#
+	# cache: cache_*
+	# dav: dav_*
+	# proxy: proxy_*
+	# session: session_*
+	# unixd: mod_dnssd
+	# watchdog: heartbeat
+	#
+	# We ship the implibs for the benefit of other such 3rd-party modules
+	for m in cache/mod_cache dav/main/mod_dav proxy/mod_proxy \
+	         session/mod_session arch/unix/mod_unixd core/mod_watchdog
+	do
+		newlib modules/${m%/*}/.libs/${m##*/}.dll.a lib${m##*/}.dll.a
+	done
 
 	exeinto /etc/rc.d/init.d
 	newexe ${S}/httpd.init httpd

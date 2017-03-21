@@ -1,0 +1,90 @@
+--- origsrc/httpd-2.4.25/modules/cache/config.m4	2015-10-06 07:37:09.000000000 -0500
++++ src/httpd-2.4.25/modules/cache/config.m4	2017-03-16 03:39:09.451695800 -0500
+@@ -16,7 +16,7 @@ cache_disk_objs="mod_cache_disk.lo"
+ cache_socache_objs="mod_cache_socache.lo"
+ 
+ case "$host" in
+-  *os2*)
++  *os2*|*cygwin*)
+     # OS/2 DLLs must resolve all symbols at build time
+     # and we need some from main cache module
+     cache_disk_objs="$cache_disk_objs mod_cache.la"
+--- origsrc/httpd-2.4.25/modules/cluster/config5.m4	2012-01-22 12:34:56.000000000 -0600
++++ src/httpd-2.4.25/modules/cluster/config5.m4	2017-03-16 03:39:18.892130900 -0500
+@@ -4,7 +4,7 @@ APACHE_MODPATH_INIT(cluster)
+ heartbeat_objects='mod_heartbeat.lo'
+ 
+ case "$host" in
+-  *os2*)
++  *os2*|*cygwin*)
+     # OS/2 DLLs must resolve all symbols at build time
+     # and we need some from the watchdog module
+     heartbeat_objects="$heartbeat_objects ../core/mod_watchdog.la"
+--- origsrc/httpd-2.4.25/modules/dav/fs/config6.m4	2017-03-16 03:22:27.400307000 -0500
++++ src/httpd-2.4.25/modules/dav/fs/config6.m4	2017-03-16 03:39:26.488163300 -0500
+@@ -13,7 +13,7 @@ else
+ fi
+ 
+ case "$host" in
+-  *os2*)
++  *os2*|*cygwin*)
+     # OS/2 DLLs must resolve all symbols at build time
+     # and we need some from main DAV module
+     dav_fs_objects="$dav_fs_objects ../main/mod_dav.la"
+--- origsrc/httpd-2.4.25/modules/dav/lock/config6.m4	2012-01-22 12:34:56.000000000 -0600
++++ src/httpd-2.4.25/modules/dav/lock/config6.m4	2017-03-16 03:39:32.968489100 -0500
+@@ -5,7 +5,7 @@ APACHE_MODPATH_INIT(dav/lock)
+ dav_lock_objects="mod_dav_lock.lo locks.lo"
+ 
+ case "$host" in
+-  *os2*)
++  *os2*|*cygwin*)
+     # OS/2 DLLs must resolve all symbols at build time
+     # and we need some from main DAV module
+     dav_lock_objects="$dav_lock_objects ../main/mod_dav.la"
+--- origsrc/httpd-2.4.25/modules/proxy/config.m4	2016-08-03 06:50:07.000000000 -0500
++++ src/httpd-2.4.25/modules/proxy/config.m4	2017-03-16 04:00:28.922699700 -0500
+@@ -28,9 +28,11 @@ proxy_fdpass_objs="mod_proxy_fdpass.lo"
+ proxy_ajp_objs="mod_proxy_ajp.lo ajp_header.lo ajp_link.lo ajp_msg.lo ajp_utils.lo"
+ proxy_wstunnel_objs="mod_proxy_wstunnel.lo"
+ proxy_balancer_objs="mod_proxy_balancer.lo"
++proxy_express_objs="mod_proxy_express.lo"
++proxy_hcheck_objs="mod_proxy_hcheck.lo"
+ 
+ case "$host" in
+-  *os2*)
++  *os2*|*cygwin*)
+     # OS/2 DLLs must resolve all symbols at build time and
+     # these sub-modules need some from the main proxy module
+     proxy_connect_objs="$proxy_connect_objs mod_proxy.la"
+@@ -42,6 +44,8 @@ case "$host" in
+     proxy_ajp_objs="$proxy_ajp_objs mod_proxy.la"
+     proxy_wstunnel_objs="$proxy_wstunnel_objs mod_proxy.la"
+     proxy_balancer_objs="$proxy_balancer_objs mod_proxy.la"
++    proxy_express_objs="$proxy_express_objs mod_proxy.la"
++    proxy_hcheck_objs="$proxy_hcheck_objs mod_proxy.la ../core/mod_watchdog.la"
+     ;;
+ esac
+ 
+@@ -64,8 +68,8 @@ APACHE_MODULE(proxy_wstunnel, Apache pro
+ APACHE_MODULE(proxy_ajp, Apache proxy AJP module.  Requires --enable-proxy., $proxy_ajp_objs, , most, , proxy)
+ APACHE_MODULE(proxy_balancer, Apache proxy BALANCER module.  Requires --enable-proxy., $proxy_balancer_objs, , most, , proxy)
+ 
+-APACHE_MODULE(proxy_express, mass reverse-proxy module. Requires --enable-proxy., , , most, , proxy)
+-APACHE_MODULE(proxy_hcheck, [reverse-proxy health-check module. Requires --enable-proxy and --enable-watchdog.], , , most, , [proxy,watchdog])
++APACHE_MODULE(proxy_express, mass reverse-proxy module. Requires --enable-proxy., $proxy_express_objs, , most, , proxy)
++APACHE_MODULE(proxy_hcheck, [reverse-proxy health-check module. Requires --enable-proxy and --enable-watchdog.], $proxy_hcheck_objs, , most, , [proxy,watchdog])
+ 
+ APR_ADDTO(INCLUDES, [-I\$(top_srcdir)/$modpath_current])
+ 
+--- origsrc/httpd-2.4.25/modules/session/config.m4	2017-03-16 03:22:27.403806800 -0500
++++ src/httpd-2.4.25/modules/session/config.m4	2017-03-16 04:01:02.183505700 -0500
+@@ -22,7 +22,7 @@ session_crypto_objects='mod_session_cryp
+ session_dbd_objects='mod_session_dbd.lo'
+ 
+ case "$host" in
+-  *os2*)
++  *os2*|*cygwin*)
+     # OS/2 DLLs must resolve all symbols at build time
+     # and we need some from main session module
+     session_cookie_objects="$session_cookie_objects mod_session.la"
